@@ -1,0 +1,29 @@
+server:
+  port: 3001
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: "123456"
+  name: crm0_db_test
+
+jwt:
+  secret: test-secret-key
+  expiry_hours: 24
+
+algorithm:
+  service_url: http://localhost:8001
+
+redis:
+  url: localhost:6379
+
+stripe:
+  secret_key: ""
+  webhook_secret: ""
+
+frontend:
+  url: http://localhost:5173
+
+encryption:
+  key: test-encryption-key

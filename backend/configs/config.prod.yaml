@@ -1,0 +1,29 @@
+server:
+  port: 3000
+
+database:
+  host: ""      # set via DB_HOST env var
+  port: 5432
+  user: ""      # set via DB_USER env var
+  password: ""  # set via DB_PASSWORD env var
+  name: crm0_db
+
+jwt:
+  secret: ""         # set via JWT_SECRET env var (required)
+  expiry_hours: 24
+
+algorithm:
+  service_url: ""    # set via ALGORITHM_SERVICE_URL env var
+
+redis:
+  url: ""            # set via REDIS_URL env var
+
+stripe:
+  secret_key: ""     # set via STRIPE_SECRET_KEY env var
+  webhook_secret: "" # set via STRIPE_WEBHOOK_SECRET env var
+
+frontend:
+  url: ""            # set via FRONTEND_URL env var
+
+encryption:
+  key: ""            # set via ENCRYPTION_KEY env var (required)

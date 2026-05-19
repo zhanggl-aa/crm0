@@ -76,7 +76,7 @@ func (s *AuthService) RefreshToken(userID uuid.UUID) (*model.AuthResponse, error
 }
 
 func (s *AuthService) generateToken(user *model.User) (string, time.Time, error) {
-	expiresAt := time.Now().Add(time.Duration(s.cfg.JWTExpiryHours) * time.Hour)
+	expiresAt := time.Now().Add(time.Duration(s.cfg.JWT.ExpiryHours) * time.Hour)
 	claims := jwt.MapClaims{
 		"user_id":   user.ID.String(),
 		"tenant_id": user.TenantID.String(),
@@ -85,7 +85,7 @@ func (s *AuthService) generateToken(user *model.User) (string, time.Time, error)
 		"exp":       expiresAt.Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(s.cfg.JWTSecret))
+	tokenStr, err := token.SignedString([]byte(s.cfg.JWT.Secret))
 	if err != nil {
 		return "", time.Time{}, err
 	}

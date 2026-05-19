@@ -1,0 +1,41 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: "123456"
+      DB_NAME: crm0_db
+      JWT_SECRET: crm0-secret-key
+      JWT_EXPIRY_HOURS: 72
+      ALGORITHM_SERVICE_URL: http://algorithm:8001
+      REDIS_URL: host.docker.internal:6379
+      FRONTEND_URL: http://localhost
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      algorithm:
+        condition: service_started
+
+  algorithm:
+    build: ./algorithm
+    ports:
+      - "8001:8001"
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: "123456"
+      DB_NAME: crm0_db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

@@ -1,0 +1,29 @@
+server:
+  port: 3000
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: "123456"
+  name: crm0_db
+
+jwt:
+  secret: crm0-secret-key
+  expiry_hours: 72
+
+algorithm:
+  service_url: http://localhost:8001
+
+redis:
+  url: localhost:6379
+
+stripe:
+  secret_key: ""
+  webhook_secret: ""
+
+frontend:
+  url: http://localhost:5173
+
+encryption:
+  key: default-encryption-key-change-in-prod

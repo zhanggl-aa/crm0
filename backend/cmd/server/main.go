@@ -42,7 +42,7 @@ func main() {
 	integrationRepo := repository.NewIntegrationRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 
-	algoClient := algorithm.NewClient(cfg.AlgorithmServiceURL)
+	algoClient := algorithm.NewClient(cfg.Algorithm.ServiceURL)
 
 	// Services
 	authSvc := service.NewAuthService(userRepo, tenantRepo, cfg)
@@ -138,7 +138,7 @@ func main() {
 	mux.HandleFunc("GET /api/v1/orders/metrics", orderH.GetMetrics)
 
 	var h http.Handler = mux
-	h = middleware.JWTAuth(cfg.JWTSecret)(h)
+	h = middleware.JWTAuth(cfg.JWT.Secret)(h)
 	h = middleware.Logging(h)
 	h = middleware.CORS(h)
 

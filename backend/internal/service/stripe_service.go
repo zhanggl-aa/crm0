@@ -43,7 +43,7 @@ func (s *StripeService) GetBillingInfo(ctx context.Context, tenantID uuid.UUID) 
 }
 
 func (s *StripeService) CreateCheckoutSession(ctx context.Context, tenantID uuid.UUID, priceID string) (string, error) {
-	if s.cfg.StripeSecretKey == "" {
+	if s.cfg.Stripe.SecretKey == "" {
 		return "", nil
 	}
 
@@ -73,7 +73,7 @@ func (s *StripeService) CreateCheckoutSession(ctx context.Context, tenantID uuid
 }
 
 func (s *StripeService) CreatePortalSession(ctx context.Context, tenantID uuid.UUID) (string, error) {
-	if s.cfg.StripeSecretKey == "" {
+	if s.cfg.Stripe.SecretKey == "" {
 		return "", nil
 	}
 	b, err := s.repo.GetByTenantID(ctx, tenantID)
