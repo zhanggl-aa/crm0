@@ -2,73 +2,66 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"crm0/backend/internal/model"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-// TenantRepository provides access to the tenants storage.
 type TenantRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-// NewTenantRepository creates a new TenantRepository.
-func NewTenantRepository(db *sql.DB) *TenantRepository {
+func NewTenantRepository(db *gorm.DB) *TenantRepository {
 	return &TenantRepository{db: db}
 }
 
-// Create inserts a new tenant row into the database.
 func (r *TenantRepository) Create(ctx context.Context, tenant *model.Tenant) error {
-	query := `
-		INSERT INTO tenants (id, name, plan, settings, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`
 	if tenant.ID == uuid.Nil {
 		tenant.ID = uuid.New()
 	}
+	return r.db.WithContext(ctx).Create(tenant).Error
+}
 
-	_, err := r.db.ExecContext(ctx, query,
-		tenant.ID,
-		tenant.Name,
-		tenant.Plan,
-		tenant.Settings,
-		tenant.CreatedAt,
-		tenant.UpdatedAt,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create tenant: %w", err)
+func (r *TenantRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Tenant, error) {
+	var t model.Tenant
+	err := r.db.WithContext(ctx).First(&t, "id = ?", id).Error
+	if err == gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("tenant not found")
 	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tenant: %w", err)
+	}
+	return &t, nil
+}
 
+func (r *TenantRepository) Update(ctx context.Context, tenant *model.Tenant) error {
+	result := r.db.WithContext(ctx).Model(tenant).Select("name", "plan", "settings").Updates(tenant)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update tenant: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("tenant not found for update")
+	}
 	return nil
 }
 
-// GetByID retrieves a tenant by its primary key.
-func (r *TenantRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Tenant, error) {
-	query := `
-		SELECT id, name, plan, settings, created_at, updated_at
-		FROM tenants
-		WHERE id = $1
-	`
-	row := r.db.QueryRowContext(ctx, query, id)
-
-	var t model.Tenant
-	err := row.Scan(
-		&t.ID,
-		&t.Name,
-		&t.Plan,
-		&t.Settings,
-		&t.CreatedAt,
-		&t.UpdatedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("tenant not found: %w", err)
-		}
-		return nil, fmt.Errorf("failed to get tenant: %w", err)
+func (r *TenantRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Tenant{})
+	if result.Error != nil {
+		return fmt.Errorf("failed to delete tenant: %w", result.Error)
 	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("tenant not found for delete")
+	}
+	return nil
+}
 
-	return &t, nil
+func (r *TenantRepository) List(ctx context.Context, page, pageSize int) ([]*model.Tenant, error) {
+	offset := (page - 1) * pageSize
+	var tenants []*model.Tenant
+	err := r.db.WithContext(ctx).Order("created_at DESC").Limit(pageSize).Offset(offset).Find(&tenants).Error
+	return tenants, err
 }

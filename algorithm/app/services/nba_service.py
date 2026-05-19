@@ -26,11 +26,11 @@ def _get_customer_context(customer_id: str, tenant_id: str) -> dict | None:
                    s.status AS sub_status, s.mrr,
                    s.current_period_end, s.trial_end
             FROM customers c
-            LEFT JOIN subscriptions s ON s.customer_id = c.id AND s.tenant_id = %s
+            LEFT JOIN subscriptions s ON s.customer_id = c.id
             WHERE c.id = %s AND c.tenant_id = %s
             ORDER BY s.created_at DESC LIMIT 1
             """,
-            (tenant_id, customer_id, tenant_id),
+            (customer_id, tenant_id),
         )
         customer = cur.fetchone()
         if not customer:

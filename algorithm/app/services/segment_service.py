@@ -34,10 +34,10 @@ def _get_tenant_customers(tenant_id: str) -> list[dict]:
             SELECT c.id AS customer_id, c.created_at,
                    COALESCE(s.mrr, 0) AS mrr, s.status AS sub_status
             FROM customers c
-            LEFT JOIN subscriptions s ON s.customer_id = c.id AND s.tenant_id = %s
+            LEFT JOIN subscriptions s ON s.customer_id = c.id
             WHERE c.tenant_id = %s
             """,
-            (tenant_id, tenant_id),
+            (tenant_id,),
         )
         return cur.fetchall()
 

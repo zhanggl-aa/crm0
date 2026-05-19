@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
 const router = useRouter()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -16,12 +18,12 @@ const loginForm = reactive({
 
 const rules: FormRules = {
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: () => t('auth.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: () => t('auth.emailInvalid'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
+    { required: true, message: () => t('auth.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: () => t('auth.passwordMin'), trigger: 'blur' }
   ]
 }
 
@@ -35,7 +37,7 @@ async function handleLogin() {
         email: loginForm.email,
         password: loginForm.password
       })
-      ElMessage.success('登录成功')
+      ElMessage.success(t('auth.loginSuccess'))
     } catch {
       // error handled by interceptor
     } finally {
@@ -54,7 +56,7 @@ function goToRegister() {
     <div class="login-card">
       <div class="login-header">
         <h1 class="login-title">CRM0</h1>
-        <p class="login-subtitle">SaaS 智能CRM系统</p>
+        <p class="login-subtitle">{{ t('nav.systemTitle') }}</p>
       </div>
 
       <el-form
@@ -65,19 +67,19 @@ function goToRegister() {
         size="large"
         @keyup.enter="handleLogin"
       >
-        <el-form-item label="邮箱地址" prop="email">
+        <el-form-item :label="t('auth.emailLabel')" prop="email">
           <el-input
             v-model="loginForm.email"
-            placeholder="请输入邮箱地址"
+            :placeholder="t('auth.emailPlaceholder')"
             prefix-icon="Message"
           />
         </el-form-item>
 
-        <el-form-item label="密码" prop="password">
+        <el-form-item :label="t('auth.passwordLabel')" prop="password">
           <el-input
             v-model="loginForm.password"
             type="password"
-            placeholder="请输入密码"
+            :placeholder="t('auth.passwordPlaceholder')"
             prefix-icon="Lock"
             show-password
           />
@@ -90,14 +92,14 @@ function goToRegister() {
             class="login-btn"
             @click="handleLogin"
           >
-            登录
+            {{ t('auth.loginButton') }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="login-footer">
-        <span>还没有账号？</span>
-        <el-link type="primary" @click="goToRegister">立即注册</el-link>
+        <span>{{ t('auth.noAccount') }}</span>
+        <el-link type="primary" @click="goToRegister">{{ t('auth.registerNow') }}</el-link>
       </div>
     </div>
   </div>

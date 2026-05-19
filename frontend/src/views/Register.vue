@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
 const router = useRouter()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -18,18 +20,18 @@ const registerForm = reactive({
 
 const rules: FormRules = {
   name: [
-    { required: true, message: '请输入您的姓名', trigger: 'blur' }
+    { required: true, message: () => t('auth.nameRequired'), trigger: 'blur' }
   ],
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: () => t('auth.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: () => t('auth.emailInvalid'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
+    { required: true, message: () => t('auth.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: () => t('auth.passwordMin'), trigger: 'blur' }
   ],
   tenant_name: [
-    { required: true, message: '请输入组织名称', trigger: 'blur' }
+    { required: true, message: () => t('auth.tenantNameRequired'), trigger: 'blur' }
   ]
 }
 
@@ -45,7 +47,7 @@ async function handleRegister() {
         password: registerForm.password,
         tenant_name: registerForm.tenant_name
       })
-      ElMessage.success('注册成功')
+      ElMessage.success(t('auth.registerSuccess'))
     } catch {
       // error handled by interceptor
     } finally {
@@ -64,7 +66,7 @@ function goToLogin() {
     <div class="register-card">
       <div class="register-header">
         <h1 class="register-title">CRM0</h1>
-        <p class="register-subtitle">创建您的账号</p>
+        <p class="register-subtitle">{{ t('auth.createAccount') }}</p>
       </div>
 
       <el-form
@@ -75,36 +77,36 @@ function goToLogin() {
         size="large"
         @keyup.enter="handleRegister"
       >
-        <el-form-item label="姓名" prop="name">
+        <el-form-item :label="t('auth.nameLabel')" prop="name">
           <el-input
             v-model="registerForm.name"
-            placeholder="请输入您的姓名"
+            :placeholder="t('auth.namePlaceholder')"
             prefix-icon="User"
           />
         </el-form-item>
 
-        <el-form-item label="邮箱地址" prop="email">
+        <el-form-item :label="t('auth.emailLabel')" prop="email">
           <el-input
             v-model="registerForm.email"
-            placeholder="请输入邮箱地址"
+            :placeholder="t('auth.emailPlaceholder')"
             prefix-icon="Message"
           />
         </el-form-item>
 
-        <el-form-item label="密码" prop="password">
+        <el-form-item :label="t('auth.passwordLabel')" prop="password">
           <el-input
             v-model="registerForm.password"
             type="password"
-            placeholder="请输入密码（至少6位）"
+            :placeholder="t('auth.passwordMinPlaceholder')"
             prefix-icon="Lock"
             show-password
           />
         </el-form-item>
 
-        <el-form-item label="组织名称" prop="tenant_name">
+        <el-form-item :label="t('auth.tenantNameLabel')" prop="tenant_name">
           <el-input
             v-model="registerForm.tenant_name"
-            placeholder="请输入您的公司/组织名称"
+            :placeholder="t('auth.tenantNamePlaceholder')"
             prefix-icon="OfficeBuilding"
           />
         </el-form-item>
@@ -116,14 +118,14 @@ function goToLogin() {
             class="register-btn"
             @click="handleRegister"
           >
-            注册
+            {{ t('auth.registerButton') }}
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="register-footer">
-        <span>已有账号？</span>
-        <el-link type="primary" @click="goToLogin">立即登录</el-link>
+        <span>{{ t('auth.hasAccount') }}</span>
+        <el-link type="primary" @click="goToLogin">{{ t('auth.loginNow') }}</el-link>
       </div>
     </div>
   </div>

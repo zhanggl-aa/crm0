@@ -1,44 +1,56 @@
 package repository
 
 import (
-	"database/sql"
 	"fmt"
-	"os"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 
-	"crm0/backend/internal/config"
+	"crm0/backend/internal/model"
 )
 
-// NewDB opens a connection to PostgreSQL using the provided configuration
-// and verifies connectivity with a Ping.
-func NewDB(cfg *config.Config) (*sql.DB, error) {
-	db, err := sql.Open("postgres", cfg.DSN())
+// NewDB opens a GORM connection to PostgreSQL using the provided DSN
+// and verifies connectivity.
+func NewDB(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Info),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	if err := db.Ping(); err != nil {
-		db.Close()
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(5)
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(5)
 
 	return db, nil
 }
 
-// RunMigrations reads and executes the initial migration SQL file.
-func RunMigrations(db *sql.DB) error {
-	content, err := os.ReadFile("migrations/001_init.sql")
-	if err != nil {
-		return fmt.Errorf("failed to read migration file: %w", err)
-	}
-
-	if _, err := db.Exec(string(content)); err != nil {
-		return fmt.Errorf("failed to execute migrations: %w", err)
-	}
-
-	return nil
+// RunMigrations uses GORM AutoMigrate to create/update tables for all domain models.
+func RunMigrations(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&model.Tenant{},
+		&model.User{},
+		&model.Customer{},
+		&model.Plan{},
+		&model.Subscription{},
+		&model.UserEvent{},
+		&model.ChurnPrediction{},
+		&model.CustomerSegment{},
+		&model.LTVPrediction{},
+		&model.NBARecommendation{},
+		&model.PlatformIntegration{},
+		&model.Order{},
+		&model.OnboardingStep{},
+		&model.TenantBilling{},
+	)
 }

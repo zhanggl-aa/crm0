@@ -114,12 +114,12 @@ CREATE TABLE IF NOT EXISTS nba_recommendations (
 );
 
 -- Indexes
-CREATE INDEX idx_users_tenant_id ON users(tenant_id);
-CREATE INDEX idx_customers_tenant_id ON customers(tenant_id);
-CREATE INDEX idx_subscriptions_customer_id ON subscriptions(customer_id);
-CREATE INDEX idx_user_events_customer_id ON user_events(customer_id);
-CREATE INDEX idx_user_events_occurred_at ON user_events(occurred_at);
-CREATE INDEX idx_churn_predictions_customer_id ON churn_predictions(customer_id);
-CREATE INDEX idx_customer_segments_customer_id ON customer_segments(customer_id);
-CREATE INDEX idx_ltv_predictions_customer_id ON ltv_predictions(customer_id);
-CREATE INDEX idx_nba_recommendations_customer_id ON nba_recommendations(customer_id);
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_customers_tenant_id ON customers(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id ON subscriptions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_customer_id ON user_events(customer_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_occurred_at ON user_events(occurred_at);
+CREATE INDEX IF NOT EXISTS idx_churn_predictions_customer_id ON churn_predictions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_customer_segments_customer_id ON customer_segments(customer_id);
+CREATE INDEX IF NOT EXISTS idx_ltv_predictions_customer_id ON ltv_predictions(customer_id);
+CREATE INDEX IF NOT EXISTS idx_nba_recommendations_customer_id ON nba_recommendations(customer_id);

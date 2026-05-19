@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
+import { setLocale, getLocale } from '../i18n'
 import {
   Menu as IconMenu,
   Odometer,
@@ -10,33 +12,37 @@ import {
   DataAnalysis,
   Setting,
   SwitchButton,
-  TrendCharts,
   PieChart,
-  ScatterChart,
   Histogram,
-  Opportunity
+  Opportunity,
+  ShoppingCart,
+  Link,
+  CreditCard
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const authStore = useAuthStore()
 const isCollapse = ref(false)
+
+const currentLocale = ref(getLocale())
 
 const activeMenu = computed(() => {
   return route.path
 })
 
 const userName = computed(() => {
-  return authStore.user?.name || authStore.user?.email || '用户'
+  return authStore.user?.name || authStore.user?.email || 'User'
 })
 
 const userRole = computed(() => {
-  const roleMap: Record<string, string> = {
-    admin: '管理员',
-    manager: '经理',
-    member: '成员'
+  const role = authStore.user?.role || ''
+  if (currentLocale.value === 'zh') {
+    const roleMap: Record<string, string> = { admin: '管理员', manager: '经理', member: '成员' }
+    return roleMap[role] || role
   }
-  return roleMap[authStore.user?.role || ''] || authStore.user?.role || ''
+  return role
 })
 
 function handleLogout() {
@@ -49,6 +55,11 @@ function handleSelect(key: string) {
 
 function toggleSidebar() {
   isCollapse.value = !isCollapse.value
+}
+
+function switchLocale(locale: 'en' | 'zh') {
+  setLocale(locale)
+  currentLocale.value = locale
 }
 </script>
 
@@ -72,45 +83,60 @@ function toggleSidebar() {
       >
         <el-menu-item index="/dashboard">
           <el-icon><Odometer /></el-icon>
-          <template #title>仪表盘</template>
+          <template #title>{{ t('nav.dashboard') }}</template>
         </el-menu-item>
 
         <el-menu-item index="/customers">
           <el-icon><User /></el-icon>
-          <template #title>客户管理</template>
+          <template #title>{{ t('nav.customers') }}</template>
         </el-menu-item>
 
         <el-menu-item index="/subscriptions">
           <el-icon><Tickets /></el-icon>
-          <template #title>订阅管理</template>
+          <template #title>{{ t('nav.subscriptions') }}</template>
+        </el-menu-item>
+
+        <el-menu-item index="/orders">
+          <el-icon><ShoppingCart /></el-icon>
+          <template #title>{{ t('nav.orders') }}</template>
+        </el-menu-item>
+
+        <el-menu-item index="/integrations">
+          <el-icon><Link /></el-icon>
+          <template #title>{{ t('nav.integrations') }}</template>
         </el-menu-item>
 
         <el-sub-menu index="analytics">
           <template #title>
             <el-icon><DataAnalysis /></el-icon>
-            <span>数据分析</span>
+            <span>{{ t('nav.analytics') }}</span>
           </template>
           <el-menu-item index="/analytics/churn">
             <el-icon><PieChart /></el-icon>
-            <template #title>流失预测</template>
+            <template #title>{{ t('nav.churnPrediction') }}</template>
           </el-menu-item>
           <el-menu-item index="/analytics/segments">
-            <el-icon><ScatterChart /></el-icon>
-            <template #title>客户分层</template>
+            <el-icon><DataAnalysis /></el-icon>
+            <template #title>{{ t('nav.customerSegments') }}</template>
           </el-menu-item>
           <el-menu-item index="/analytics/ltv">
             <el-icon><Histogram /></el-icon>
-            <template #title>LTV 分析</template>
+            <template #title>{{ t('nav.ltvAnalysis') }}</template>
           </el-menu-item>
           <el-menu-item index="/analytics/nba">
             <el-icon><Opportunity /></el-icon>
-            <template #title>行动推荐</template>
+            <template #title>{{ t('nav.nbaRecommendations') }}</template>
           </el-menu-item>
         </el-sub-menu>
 
+        <el-menu-item index="/billing">
+          <el-icon><CreditCard /></el-icon>
+          <template #title>{{ t('nav.billing') }}</template>
+        </el-menu-item>
+
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
-          <template #title>系统设置</template>
+          <template #title>{{ t('nav.settings') }}</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -121,9 +147,20 @@ function toggleSidebar() {
           <el-icon class="collapse-btn" @click="toggleSidebar">
             <IconMenu />
           </el-icon>
-          <span class="header-title">SaaS 智能CRM系统</span>
+          <span class="header-title">{{ t('nav.systemTitle') }}</span>
         </div>
         <div class="header-right">
+          <el-dropdown trigger="click" @command="switchLocale" style="margin-right: 16px">
+            <span class="locale-switch">
+              {{ currentLocale === 'zh' ? '中文' : 'EN' }}
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="en" :disabled="currentLocale === 'en'">English</el-dropdown-item>
+                <el-dropdown-item command="zh" :disabled="currentLocale === 'zh'">中文</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <el-dropdown trigger="click">
             <span class="user-info">
               <el-icon><User /></el-icon>
@@ -133,10 +170,10 @@ function toggleSidebar() {
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="router.push('/settings')">
-                  <el-icon><Setting /></el-icon>系统设置
+                  <el-icon><Setting /></el-icon>{{ t('nav.settings') }}
                 </el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">
-                  <el-icon><SwitchButton /></el-icon>退出登录
+                  <el-icon><SwitchButton /></el-icon>{{ t('auth.logout') }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -237,6 +274,21 @@ function toggleSidebar() {
 .header-right {
   display: flex;
   align-items: center;
+}
+
+.locale-switch {
+  cursor: pointer;
+  color: #606266;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.locale-switch:hover {
+  color: #409eff;
+  border-color: #409eff;
 }
 
 .user-info {

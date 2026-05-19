@@ -36,15 +36,15 @@ def _get_customer_data(customer_id: str, tenant_id: str) -> dict | None:
         # Customer and subscription info
         cur.execute(
             """
-            SELECT c.id, c.created_at, c.acquisition_channel,
+            SELECT c.id, c.created_at, c.acquired_channel,
                    s.id AS sub_id, s.status AS sub_status,
                    s.mrr, s.current_period_start, s.current_period_end
             FROM customers c
-            LEFT JOIN subscriptions s ON s.customer_id = c.id AND s.tenant_id = %s
+            LEFT JOIN subscriptions s ON s.customer_id = c.id
             WHERE c.id = %s AND c.tenant_id = %s
             ORDER BY s.created_at DESC LIMIT 1
             """,
-            (tenant_id, customer_id, tenant_id),
+            (customer_id, tenant_id),
         )
         customer = cur.fetchone()
         if not customer:
@@ -88,7 +88,7 @@ def _get_customer_data(customer_id: str, tenant_id: str) -> dict | None:
         "customer_id": customer_id,
         "tenant_id": tenant_id,
         "created_at": created_at,
-        "acquisition_channel": customer.get("acquisition_channel", "unknown"),
+        "acquired_channel": customer.get("acquired_channel", "unknown"),
         "mrr": float(customer.get("mrr") or 0),
         "sub_status": customer.get("sub_status"),
         "duration_months": duration_months,
@@ -269,12 +269,12 @@ def _get_channel_roi(tenant_id: str) -> list[ChannelROI]:
         # Get LTV predictions with channel info
         cur.execute(
             """
-            SELECT c.acquisition_channel, l.predicted_ltv
+            SELECT c.acquired_channel, l.predicted_ltv
             FROM ltv_predictions l
-            JOIN customers c ON c.id = l.customer_id AND c.tenant_id = %s
-            WHERE l.tenant_id = %s AND c.acquisition_channel IS NOT NULL
+            JOIN customers c ON c.id = l.customer_id
+            WHERE c.tenant_id = %s AND c.acquired_channel IS NOT NULL
             """,
-            (tenant_id, tenant_id),
+            (tenant_id,),
         )
         rows = cur.fetchall()
 
@@ -283,19 +283,19 @@ def _get_channel_roi(tenant_id: str) -> list[ChannelROI]:
         with get_cursor(dict_cursor=True) as cur:
             cur.execute(
                 """
-                SELECT acquisition_channel, AVG(mrr) AS avg_mrr, COUNT(*) AS cnt
+                SELECT acquired_channel, AVG(mrr) AS avg_mrr, COUNT(*) AS cnt
                 FROM customers c
-                LEFT JOIN subscriptions s ON s.customer_id = c.id AND s.tenant_id = %s
-                WHERE c.tenant_id = %s AND c.acquisition_channel IS NOT NULL
-                GROUP BY acquisition_channel
+                LEFT JOIN subscriptions s ON s.customer_id = c.id
+                WHERE c.tenant_id = %s AND c.acquired_channel IS NOT NULL
+                GROUP BY acquired_channel
                 """,
-                (tenant_id, tenant_id),
+                (tenant_id,),
             )
             fallback_rows = cur.fetchall()
 
         results = []
         for r in fallback_rows:
-            channel = r["acquisition_channel"] or "unknown"
+            channel = r["acquired_channel"] or "unknown"
             avg_mrr = float(r["avg_mrr"] or 0)
             # Estimate CAC as 3x MRR (industry heuristic)
             cac = avg_mrr * 3
@@ -312,7 +312,7 @@ def _get_channel_roi(tenant_id: str) -> list[ChannelROI]:
     # Group by channel
     channel_data: dict[str, list[float]] = {}
     for r in rows:
-        ch = r["acquisition_channel"] or "unknown"
+        ch = r["acquired_channel"] or "unknown"
         if ch not in channel_data:
             channel_data[ch] = []
         channel_data[ch].append(float(r["predicted_ltv"] or 0))

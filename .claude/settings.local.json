@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Skill(superpowers:writing-plans)"
+      "Skill(superpowers:writing-plans)",
+      "PowerShell(Get-ChildItem -Path \"E:\\\\workspace\\\\vscode\\\\crm0\\\\algorithm\\\\app\" -Recurse -File | Where-Object { $_.Extension -eq \".py\" } | Select-Object FullName)"
     ]
   }
 }

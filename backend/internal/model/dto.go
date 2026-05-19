@@ -182,3 +182,87 @@ type AlgorithmTaskResponse struct {
 	Status string          `json:"status"`
 	Result json.RawMessage `json:"result,omitempty"`
 }
+
+// ──────────────────────────────────────────────
+// Integration DTOs
+// ──────────────────────────────────────────────
+
+// ConnectPlatformRequest is the payload for connecting an e-commerce platform.
+type ConnectPlatformRequest struct {
+	Platform string `json:"platform"`
+	Code     string `json:"code"`
+}
+
+// PlatformIntegrationResponse is the API response for a platform integration.
+type PlatformIntegrationResponse struct {
+	ID           uuid.UUID  `json:"id"`
+	TenantID     uuid.UUID  `json:"tenant_id"`
+	Platform     string     `json:"platform"`
+	SyncStatus   string     `json:"sync_status"`
+	LastSyncedAt *time.Time `json:"last_synced_at,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
+
+// ──────────────────────────────────────────────
+// Order DTOs
+// ──────────────────────────────────────────────
+
+// OrderListParams holds query parameters for listing orders.
+type OrderListParams struct {
+	Page      int    `json:"page"`
+	PageSize  int    `json:"page_size"`
+	Platform  string `json:"platform,omitempty"`
+	Status    string `json:"status,omitempty"`
+}
+
+// OrderMetrics contains aggregate metrics for orders.
+type OrderMetrics struct {
+	TotalOrders   int     `json:"total_orders"`
+	TotalRevenue  float64 `json:"total_revenue"`
+	AvgOrderValue float64 `json:"avg_order_value"`
+	ByPlatform    []PlatformOrderMetric `json:"by_platform"`
+}
+
+// PlatformOrderMetric shows order metrics per platform.
+type PlatformOrderMetric struct {
+	Platform string  `json:"platform"`
+	Count    int     `json:"count"`
+	Revenue  float64 `json:"revenue"`
+}
+
+// ──────────────────────────────────────────────
+// Onboarding DTOs
+// ──────────────────────────────────────────────
+
+// OnboardingStatusResponse is the API response for onboarding status.
+type OnboardingStatusResponse struct {
+	TenantID       uuid.UUID       `json:"tenant_id"`
+	Step           int             `json:"step"`
+	CompletedSteps json.RawMessage `json:"completed_steps"`
+	DemoDataSeeded bool            `json:"demo_data_seeded"`
+	Completed      bool            `json:"completed"`
+}
+
+// CompleteStepRequest is the payload for completing an onboarding step.
+type CompleteStepRequest struct {
+	Step int `json:"step"`
+}
+
+// ──────────────────────────────────────────────
+// Billing DTOs
+// ──────────────────────────────────────────────
+
+// CheckoutSessionRequest is the payload for creating a Stripe checkout session.
+type CheckoutSessionRequest struct {
+	PriceID string `json:"price_id"`
+}
+
+// BillingInfoResponse is the API response for billing info.
+type BillingInfoResponse struct {
+	TenantID             uuid.UUID  `json:"tenant_id"`
+	Plan                 string     `json:"plan"`
+	Status               string     `json:"status"`
+	StripeCustomerID     string     `json:"stripe_customer_id"`
+	CurrentPeriodEnd     *time.Time `json:"current_period_end,omitempty"`
+}

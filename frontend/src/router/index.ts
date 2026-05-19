@@ -16,6 +16,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/onboarding',
+    name: 'Onboarding',
+    component: () => import('../views/Onboarding.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/',
     component: AppLayout,
     meta: { requiresAuth: true },
@@ -40,6 +46,21 @@ const routes: RouteRecordRaw[] = [
         path: 'subscriptions',
         name: 'Subscriptions',
         component: () => import('../views/Subscriptions.vue')
+      },
+      {
+        path: 'orders',
+        name: 'Orders',
+        component: () => import('../views/Orders.vue')
+      },
+      {
+        path: 'integrations',
+        name: 'Integrations',
+        component: () => import('../views/Integrations.vue')
+      },
+      {
+        path: 'billing',
+        name: 'Billing',
+        component: () => import('../views/Billing.vue')
       },
       {
         path: 'analytics/churn',

@@ -20,6 +20,10 @@ type Config struct {
 	AlgorithmServiceURL string
 	RedisURL            string
 	AppPort             int
+	StripeSecretKey     string
+	StripeWebhookSecret string
+	FrontendURL         string
+	EncryptionKey       string
 }
 
 // Load reads configuration from environment variables and .env file.
@@ -39,6 +43,10 @@ func Load() (*Config, error) {
 		AlgorithmServiceURL: getEnv("ALGORITHM_SERVICE_URL", "http://localhost:8001"),
 		RedisURL:            getEnv("REDIS_URL", "localhost:6379"),
 		AppPort:             getEnvInt("APP_PORT", 3000),
+			StripeSecretKey:     getEnv("STRIPE_SECRET_KEY", ""),
+			StripeWebhookSecret: getEnv("STRIPE_WEBHOOK_SECRET", ""),
+			FrontendURL:         getEnv("FRONTEND_URL", "http://localhost:5173"),
+			EncryptionKey:       getEnv("ENCRYPTION_KEY", "default-encryption-key-change-in-prod"),
 	}
 
 	return cfg, nil

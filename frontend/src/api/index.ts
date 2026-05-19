@@ -1,6 +1,7 @@
 import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
+import i18n from '../i18n'
 
 const api = axios.create({
   baseURL: '/api/v1',
@@ -28,27 +29,28 @@ api.interceptors.response.use(
     return response.data
   },
   (error) => {
+    const t = i18n.global.t
     if (error.response) {
       const { status, data } = error.response
       if (status === 401) {
         localStorage.removeItem('crm0_token')
         localStorage.removeItem('crm0_user')
         router.push('/login')
-        ElMessage.error('登录已过期，请重新登录')
+        ElMessage.error(t('auth.loginExpired'))
       } else if (status === 403) {
-        ElMessage.error('没有权限执行此操作')
+        ElMessage.error(t('auth.noPermission'))
       } else if (status === 404) {
-        ElMessage.error('请求的资源不存在')
+        ElMessage.error(t('auth.resourceNotFound'))
       } else if (status >= 500) {
-        ElMessage.error('服务器错误，请稍后重试')
+        ElMessage.error(t('auth.serverError'))
       } else {
-        const message = data?.message || data?.error || '请求失败'
+        const message = data?.message || data?.error || t('auth.requestFailed')
         ElMessage.error(message)
       }
     } else if (error.request) {
-      ElMessage.error('网络连接失败，请检查网络')
+      ElMessage.error(t('auth.networkError'))
     } else {
-      ElMessage.error('请求发送失败')
+      ElMessage.error(t('auth.sendFailed'))
     }
     return Promise.reject(error)
   }
